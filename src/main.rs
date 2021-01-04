@@ -1,8 +1,5 @@
-use std::{fs::File, env::temp_dir};
+use std::{ fs::File };
 use std::io;
-use std::io::copy;
-use std::path::Path;
-use tempfile::Builder;
 
 mod types;
 
@@ -11,7 +8,7 @@ fn is_valid_wallpaper_link(s: &str) -> bool {
         return true;
     }
 
-    false
+    return false;
 }
 
 #[tokio::main]
@@ -27,28 +24,12 @@ async fn fetch_from_reddit() -> Result<(), Box<dyn std::error::Error>> {
 
     for wallpaper in value.data.children {
         if is_valid_wallpaper_link(&wallpaper.data.url) {
-            println!("{}", wallpaper.data.url);
+            println!("link: {}", wallpaper.data.url);
             link_number += 1;
 
-            let tmp_dir = Builder::new().prefix("downloaded").tempdir()?;
-            let response = reqwest::get(&wallpaper.data.url).await?;
-
-            let mut destination = {
-                let file_name = response
-                    .url()
-                    .path_segments()
-                    .and_then(|segments| segments.last())
-                    .and_then(|name| if name.is_empty() { None } else { Some(name) })
-                    .unwrap_or("tmp.bin");
-
-                println!("file to download: {}", file_name);
-                let file_name = tmp_dir.path().join(file_name);
-                File::create(file_name)?
-            };
-
-            let co = response.text().await?;
-
-            copy(&mut co.as_bytes(), &mut destination);
+            let mut resp = reqwest::get(&wallpaper.data.url);
+            let mut out = File::create(format!("{}/{}", "dir_name", &link_number.to_string())).expect("failed to create file");
+            io::copy(&mut resp, &mut out).expect("failed to copy content");
         }
         println!("{}", link_number);
     }
