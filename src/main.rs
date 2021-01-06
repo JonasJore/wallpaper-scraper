@@ -1,5 +1,7 @@
+use std::{self, fs::create_dir};
+use std::path::Path;
 use std::fs::File;
-use std::io::copy;
+use std::io::{ copy, Cursor };
 
 mod types;
 
@@ -11,18 +13,23 @@ fn is_valid_wallpaper_link(s: &str) -> bool {
     return false;
 }
 
-async fn download_link(url: &str, file_name: &str, dir_name: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn download_link(url: &str, file_name: &str, dir_name: &str) -> types::Res<()> {
     if dir_name.ends_with("/") || dir_name.ends_with("\\") {
         dir_name.to_string().pop();
     }
-    let mut resp = reqwest::get(url).await?;
-    let mut out = File::create(format!("{}/{}", dir_name, file_name)).expect("failed to create file");
-    copy(&mut resp.text().await?.as_bytes(), &mut out).expect("failed to copy content");
+
+    let mut file_content = Cursor::new(
+        reqwest::get(url).await?.bytes().await?
+    );
+
+    let mut output_file = File::create(format!("{}/{}", dir_name, file_name)).expect("failed to create file");
+    copy(&mut file_content, &mut output_file).expect("failed to copy content");
+    
     Ok(())
 }
 
 #[tokio::main]
-async fn fetch_from_reddit() -> Result<(), Box<dyn std::error::Error>> {
+async fn fetch_from_reddit() -> types::Res<()> {
     let res = reqwest::get("https://www.reddit.com/r/wallpaper/top.json?t=all&limit=100").await?;
 
     println!("Status: {}", res.status());
@@ -47,6 +54,10 @@ async fn fetch_from_reddit() -> Result<(), Box<dyn std::error::Error>> {
 
             println!("file to download: {}", file_name);
 
+            if !Path::new("img").exists() {
+                create_dir("img").expect("failed to create dir");
+            }
+
             download_link(&wallpaper.data.url, file_name, "img").await?;
         }
         println!("{}", link_number);
@@ -58,5 +69,5 @@ async fn fetch_from_reddit() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn main() {
-    fetch_from_reddit();
+    fetch_from_reddit().expect("failed");
 }

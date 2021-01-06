@@ -1,5 +1,7 @@
 use serde::Deserialize;
 
+pub type Res<T> = Result<T, Box<dyn std::error::Error>>;
+
 #[derive(Deserialize)]
 pub struct WallpaperPost {
     subreddit: String,
