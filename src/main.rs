@@ -40,9 +40,7 @@ async fn fetch_from_reddit() -> types::Res<()> {
 
     for wallpaper in value.data.children {
         if is_valid_wallpaper_link(&wallpaper.data.url) {
-            println!("{}", wallpaper.data.url);
             link_number += 1;
-
             let response = reqwest::get(&wallpaper.data.url).await?;
 
             let file_name = response
@@ -52,15 +50,22 @@ async fn fetch_from_reddit() -> types::Res<()> {
                 .and_then(|name| if name.is_empty() { None } else { Some(name) })
                 .unwrap_or("tmp.bin");
 
-            println!("file to download: {}", file_name);
+            
 
             if !Path::new("img").exists() {
                 create_dir("img").expect("failed to create dir");
             }
 
             download_link(&wallpaper.data.url, file_name, "img").await?;
+            
+            println!("Downloading: {} | Upvotes: {} | By: {} | Sub: r/{} | Downloaded: {} images", 
+                &file_name,
+                &wallpaper.data.ups,
+                &wallpaper.data.author,
+                &wallpaper.data.subreddit,
+                &link_number
+            );
         }
-        println!("{}", link_number);
     }
 
     println!("after = {}", value.data.after);

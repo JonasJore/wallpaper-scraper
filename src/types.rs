@@ -3,11 +3,11 @@ use serde::Deserialize;
 pub type Res<T> = Result<T, Box<dyn std::error::Error>>;
 #[derive(Deserialize)]
 pub struct WallpaperPost {
-    subreddit: String,
-    ups: u32,
+    pub subreddit: String,
+    pub ups: u32,
     pub url: String,
     created: f64,
-    author: String,
+    pub author: String,
 }
 #[derive(Deserialize)]
 pub struct Post {
