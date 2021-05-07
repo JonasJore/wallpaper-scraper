@@ -1,7 +1,8 @@
-use std::{self, fs::create_dir};
-use std::path::Path;
+use std::fs::create_dir;
 use std::fs::File;
-use std::io::{ copy, Cursor };
+use std::io::copy;
+use std::io::Cursor;
+use std::path::Path;
 
 mod types;
 
@@ -10,7 +11,7 @@ fn is_valid_wallpaper_link(s: &str) -> bool {
         return true;
     }
 
-    return false;
+    false
 }
 
 async fn download_link(url: &str, file_name: &str, dir_name: &str) -> types::Res<()> {
@@ -18,13 +19,12 @@ async fn download_link(url: &str, file_name: &str, dir_name: &str) -> types::Res
         dir_name.to_string().pop();
     }
 
-    let mut file_content = Cursor::new(
-        reqwest::get(url).await?.bytes().await?
-    );
+    let mut file_content = Cursor::new(reqwest::get(url).await?.bytes().await?);
 
-    let mut output_file = File::create(format!("{}/{}", dir_name, file_name)).expect("failed to create file");
+    let mut output_file =
+        File::create(format!("{}/{}", dir_name, file_name)).expect("failed to create file");
     copy(&mut file_content, &mut output_file).expect("failed to copy content");
-    
+
     Ok(())
 }
 
