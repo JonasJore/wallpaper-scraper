@@ -9,3 +9,4 @@
 [] generating timestamps for each downloaded image
 [] coloring log output
 [] user input
+[] pagination example for calling next page would be `https://www.reddit.com/r/wallpaper.json?after={after}`
