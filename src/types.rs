@@ -6,7 +6,7 @@ pub struct WallpaperPost {
     pub subreddit: String,
     pub ups: u32,
     pub url: String,
-    created: f64,
+   //created: f64, TODO: implement use for this later
     pub author: String,
 }
 #[derive(Deserialize)]

@@ -41,8 +41,9 @@ async fn download_link(url: &str, file_name: &str, dir_name: &str) -> types::Res
     Ok(())
 }
 
+// TODO: code splitting
 #[tokio::main]
-async fn fetch_from_reddit(args: ArgMatches) -> types::Res<()> {
+async fn fetch_from_reddit(_args: ArgMatches) -> types::Res<()> {
     // TODO: when making the script more interactive, user will be able to choose /r themselves
     let reddit_url = format!(
         "https://www.reddit.com/r/{}/top.json?t=all&limit=100",
@@ -50,16 +51,20 @@ async fn fetch_from_reddit(args: ArgMatches) -> types::Res<()> {
     );
     let res = reqwest::get(&reddit_url).await?;
 
-    println!("Status: {}", res.status());
+    println!(
+        "{} | Status: {}", 
+        Fixed(PURPLE).paint(format!("[{}]", chrono::Local::now().format("%T").to_string())), 
+        Fixed(BRONZE).paint(&res.status().to_string())
+    );
 
     let body = res.text().await?;
     let value: types::RedditResponse = serde_json::from_str(&body)?;
     // TODO: can be used to give users info at a later point
-    let mut link_number: i32 = 0;
+    let mut _link_number: i32 = 0;
 
     for wallpaper in value.data.children {
         if is_valid_wallpaper_link(&wallpaper.data.url) {
-            link_number += 1;
+            _link_number += 1;
             let response = reqwest::get(&wallpaper.data.url).await?;
 
             let file_name_with_author = response
@@ -86,11 +91,9 @@ async fn fetch_from_reddit(args: ArgMatches) -> types::Res<()> {
             )
             .await?;
 
-            let time = chrono::Local::now().format("%T");
-
             println!(
                 "{} | Downloading: {} | Upvotes: {} | Sub: r/{}",
-                Fixed(PURPLE).paint(format!("[{}]", &time.to_string())),
+                Fixed(PURPLE).paint(format!("[{}]", chrono::Local::now().format("%T").to_string())),
                 Fixed(CYAN).paint(&file_name_with_author.to_string()),
                 Fixed(BRONZE).paint(&wallpaper.data.ups.to_string()),
                 &wallpaper.data.subreddit,

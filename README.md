@@ -1,4 +1,4 @@
-# TODO:
+# TODO
 
 [X] fetch wallpapers from r/wallpaper.json  
 [X] download images (in progress)  
@@ -10,3 +10,4 @@
 [] coloring log output
 [] user input
 [] pagination example for calling next page would be `https://www.reddit.com/r/wallpaper.json?after={after}`
+[] code splitting where this makes sense
